@@ -1,7 +1,7 @@
 def detect_platform():
 
     # --- Check Microcontroller (MicroPython) ---
-    printf "Checking board using"
+    print("Checking board using MicroPython method...")
     try:
         import machine
         return "Microcontroller"
@@ -9,6 +9,7 @@ def detect_platform():
         pass
 
     # --- Check Raspberry Pi (Linux) ---
+    print("Checking board using Linux cpuinfo...")
     try:
         with open("/proc/cpuinfo", "r") as f:
             if "Raspberry Pi" in f.read():
@@ -21,4 +22,4 @@ def detect_platform():
 
 
 # Test
-print(detect_platform())
+print("Detected Platform:", detect_platform())
