@@ -3,7 +3,7 @@ def detect_platform():
     # --- Check Microcontroller (MicroPython) ---
     print("Checking board using MicroPython method...")
     try:
-        import machine
+        import board
         return "Microcontroller"
     except:
         pass
