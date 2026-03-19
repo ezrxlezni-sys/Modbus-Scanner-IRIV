@@ -3,8 +3,8 @@ import struct
 import time
 
 PORT = "/dev/ttyACM0"
-BAUDRATES = [4800, 9600, 19200, 38400]
-SLAVE_IDS = range(1, 11)
+BAUDRATES = [9600, 4800]
+SLAVE_IDS = range(1, 248)
 TIMEOUT = 0.3
 
 
