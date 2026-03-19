@@ -6,7 +6,7 @@ from umodbus.serial import Serial as ModbusRTUMaster
 baudrates = [9600, 4800]
 
 # Slave ID range
-slave_ids = range(1, 10)
+slave_ids = range(1, 248)
 
 def scan_modbus():
 
