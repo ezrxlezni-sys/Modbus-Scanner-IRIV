@@ -66,7 +66,3 @@ def scan_modbus():
             print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[2]}")
     else:
         print("No device found.")
-
-
-if __name__ == "__main__":
-    scan_modbus()
