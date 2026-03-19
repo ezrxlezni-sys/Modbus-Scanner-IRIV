@@ -1,25 +1,44 @@
+import sys
+
 def detect_platform():
 
-    # --- Check Microcontroller (MicroPython) ---
-    print("Checking board using MicroPython method...")
+    # --- Microcontroller detection ---
     try:
-        import board
-        return "Microcontroller"
+        if sys.implementation.name in ("micropython", "circuitpython"):
+            return "Microcontroller"
     except:
         pass
 
-    # --- Check Raspberry Pi (Linux) ---
-    print("Checking board using Linux cpuinfo...")
+    # --- Raspberry Pi detection ---
     try:
-        with open("/proc/cpuinfo", "r") as f:
+        with open("/proc/cpuinfo") as f:
             if "Raspberry Pi" in f.read():
                 return "Raspberry Pi"
     except:
         pass
 
-    # --- Other ---
     return "Unknown"
 
 
-# Test
-print("Detected Platform:", detect_platform())
+def main():
+
+    platform_type = detect_platform()
+
+    print("Detected Platform:", platform_type)
+
+    if platform_type == "Raspberry Pi":
+
+        print("Running PiControl Modbus Scanner...")
+        import picontrol
+        picontrol.scan_modbus()
+
+    elif platform_type == "Microcontroller":
+
+        print("Microcontroller detected (scanner not implemented yet)")
+
+    else:
+        print("Unsupported platform")
+
+
+if __name__ == "__main__":
+    main()
