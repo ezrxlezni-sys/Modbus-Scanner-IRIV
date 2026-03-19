@@ -1,33 +1,23 @@
-def detect_board():
-    # --- Try MicroPython board detection ---
+def detect_platform():
+
+    # --- Check Microcontroller (MicroPython) ---
     try:
         import machine
-        board = machine.uname().machine
-        
-        if "RP2" in board or "rp2" in board or "RP2040" in board:
-            return "RP2035 / RP2040 Board"
-        
-        return "MicroPython Board (Unknown)"
-        
+        return "Microcontroller"
     except:
         pass
-    # --- Try Raspberry Pi detection ---
+
+    # --- Check Raspberry Pi (Linux) ---
     try:
         with open("/proc/cpuinfo", "r") as f:
-            cpuinfo = f.read()
-
-        if "Raspberry Pi" in cpuinfo:
-            if "BCM2711" in cpuinfo:
-                return "Raspberry Pi 4"
-            else:
-                return "Raspberry Pi (Other Model)"
-    
+            if "Raspberry Pi" in f.read():
+                return "Raspberry Pi"
     except:
         pass
-        
-    # --- Fallback ---
-    import platform
-    return f"Unknown Platform ({platform.system()})"
-    
+
+    # --- Other ---
+    return "Unknown"
+
+
 # Test
-print(detect_board())
+print(detect_platform())
