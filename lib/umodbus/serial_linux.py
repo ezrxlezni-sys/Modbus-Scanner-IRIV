@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 """
-Linux / PiControl serial backend for Modbus RTU.
-
-This file is made to keep your existing umodbus structure,
-but replace the MicroPython UART layer with pyserial.
-
 Required:
     pip install pyserial
 or:
