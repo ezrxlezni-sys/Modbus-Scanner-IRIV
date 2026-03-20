@@ -1,6 +1,11 @@
-import serial
-import struct
-import time
+import sys
+import os
+
+CURRENT_DIR = os.path.dirname(__file__)
+LIB_PATH = os.path.join(CURRENT_DIR, "lib")
+
+if LIB_PATH not in sys.path:
+    sys.path.insert(0, LIB_PATH)
 
 PORT = "/dev/ttyACM0"
 BAUDRATES = [9600, 4800]
