@@ -1,6 +1,11 @@
-import serial
-import struct
-import time
+import sys
+import os
+
+CURRENT_DIR = os.path.dirname(__file__)
+LIB_PATH = os.path.join(CURRENT_DIR, "lib")
+
+if LIB_PATH not in sys.path:
+    sys.path.insert(0, LIB_PATH)
 
 PORT = "/dev/ttyACM0"
 BAUDRATES = [9600, 4800]
@@ -21,7 +26,7 @@ def crc16_modbus(data: bytes) -> bytes:
 
 
 def build_read_request(slave_id: int, reg_addr: int = 0, reg_qty: int = 1) -> bytes:
-    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)   # function 03
+    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)
     adu_no_crc = struct.pack(">B", slave_id) + pdu
     return adu_no_crc + crc16_modbus(adu_no_crc)
 
@@ -66,3 +71,7 @@ def scan_modbus():
             print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[2]}")
     else:
         print("No device found.")
+
+
+if __name__ == "__main__":
+    scan_modbus()
