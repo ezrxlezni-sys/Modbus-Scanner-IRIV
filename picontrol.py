@@ -21,7 +21,7 @@ def crc16_modbus(data: bytes) -> bytes:
 
 
 def build_read_request(slave_id: int, reg_addr: int = 0, reg_qty: int = 1) -> bytes:
-    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)   # function 03
+    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)
     adu_no_crc = struct.pack(">B", slave_id) + pdu
     return adu_no_crc + crc16_modbus(adu_no_crc)
 
@@ -66,3 +66,7 @@ def scan_modbus():
             print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[2]}")
     else:
         print("No device found.")
+
+
+if __name__ == "__main__":
+    scan_modbus()
