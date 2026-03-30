@@ -1,47 +1,94 @@
-import sys
-import os
+import serial
+import struct
+import time
 
+PORT = "/dev/ttyACM0"
 BAUDRATES = [9600, 4800]
 SLAVE_IDS = range(1, 248)
+TIMEOUT = 0.3
+
+
+def crc16_modbus(data: bytes) -> bytes:
+    crc = 0xFFFF
+    for b in data:
+        crc ^= b
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ 0xA001
+            else:
+                crc >>= 1
+    return struct.pack("<H", crc)
+
+
+def build_read_request(slave_id: int, reg_addr: int = 0, reg_qty: int = 1) >
+    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)
+    adu_no_crc = struct.pack(">B", slave_id) + pdu
+    return adu_no_crc + crc16_modbus(adu_no_crc)
 
 
 def scan_modbus():
     found = []
+    ser = None
 
     for baud in BAUDRATES:
-        print("\nTesting baudrate:", baud)
+        print(f"\n[INFO] Testing baudrate {baud}")
 
+            try:
+                ser.close()
+                print("[DEBUG] Serial port closed")
+            except:
+                pass
+
+            ser = None
+            time.sleep(0.3)   # allow driver settle
+
+        # ===== OPEN SERIAL =====
+        try:
+            ser = serial.Serial(
+                PORT,
+                baudrate=baud,
+                bytesize=8,
+                parity="N",
+                stopbits=1,
+                timeout=TIMEOUT
+            )
+            print("[DEBUG] Serial port opened")
+            time.sleep(0.3)   # allow RS485 hardware settle
+        except Exception as e:
+            print(f"[ERROR] Cannot open port: {e}")
+            continue
+
+        # ===== SCAN SLAVES =====
         for slave_id in SLAVE_IDS:
             try:
-                # Assume IRIV handles Modbus internally
-                # Replace this with your IRIV read function
-                response = read_modbus(slave_id, baud)
+                request = build_read_request(slave_id)
 
-                if response:
-                    print("FOUND -> Baudrate:", baud, "Slave ID:", slave_id)
-                    found.append((baud, slave_id))
+                ser.reset_input_buffer()
+                ser.write(request)
+                ser.flush()
+
+                time.sleep(0.05)
+                response = ser.read(64)
+
+                if len(response) >= 5:
+                    print(f"[FOUND] Slave ID {slave_id} at baudrate {baud} >
+                    found.append((baud, slave_id, response.hex(' ')))
                 else:
-                    print("No response -> Slave ID:", slave_id)
+                    print(f"[NO] Slave ID {slave_id}")
 
             except Exception as e:
-                print("Error -> Slave ID:", slave_id, e)
+                print(f"[ERR] Slave ID {slave_id}: {e}")
 
-    print("\n=== RESULT ===")
+    # ===== FINAL CLOSE =====
+    if ser is not None:
+        ser.close()
+
+    print("\n=== Scan Result ===")
     if found:
-        for f in found:
-            print("Baudrate:", f[0], "Slave ID:", f[1])
+        for item in found:
+            print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[>
     else:
-        print("No device found")
-
-
-# Dummy function (YOU replace this with IRIV function)
-def read_modbus(slave_id, baud):
-    """
-    Replace this with your IRIV Modbus read function
-    Example:
-    host.read_holding_registers(...)
-    """
-    return None  # placeholder
+        print("No device found.")
 
 
 if __name__ == "__main__":
