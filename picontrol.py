@@ -8,7 +8,7 @@ SLAVE_IDS = range(1, 248)
 TIMEOUT = 0.3
 
 
-def crc16_modbus(data: bytes) -> bytes:
+def crc16_modbus(data):
     crc = 0xFFFF
     for b in data:
         crc ^= b
@@ -20,29 +20,18 @@ def crc16_modbus(data: bytes) -> bytes:
     return struct.pack("<H", crc)
 
 
-def build_read_request(slave_id: int, reg_addr: int = 0, reg_qty: int = 1) >
-    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)
+def build_read_request(slave_id, reg_addr=0, reg_qty=1):
+    pdu = struct.pack(">BHH", 3, reg_addr, reg_qty)  # Function code 03
     adu_no_crc = struct.pack(">B", slave_id) + pdu
     return adu_no_crc + crc16_modbus(adu_no_crc)
 
 
 def scan_modbus():
     found = []
-    ser = None
 
     for baud in BAUDRATES:
         print(f"\n[INFO] Testing baudrate {baud}")
 
-            try:
-                ser.close()
-                print("[DEBUG] Serial port closed")
-            except:
-                pass
-
-            ser = None
-            time.sleep(0.3)   # allow driver settle
-
-        # ===== OPEN SERIAL =====
         try:
             ser = serial.Serial(
                 PORT,
@@ -52,16 +41,13 @@ def scan_modbus():
                 stopbits=1,
                 timeout=TIMEOUT
             )
-            print("[DEBUG] Serial port opened")
-            time.sleep(0.3)   # allow RS485 hardware settle
         except Exception as e:
             print(f"[ERROR] Cannot open port: {e}")
             continue
 
-        # ===== SCAN SLAVES =====
         for slave_id in SLAVE_IDS:
             try:
-                request = build_read_request(slave_id)
+                request = build_read_request(slave_id, 0, 1)
 
                 ser.reset_input_buffer()
                 ser.write(request)
@@ -71,7 +57,7 @@ def scan_modbus():
                 response = ser.read(64)
 
                 if len(response) >= 5:
-                    print(f"[FOUND] Slave ID {slave_id} at baudrate {baud} >
+                    print(f"[FOUND] Slave ID {slave_id} at baudrate {baud} -> {response.hex(' ')}")
                     found.append((baud, slave_id, response.hex(' ')))
                 else:
                     print(f"[NO] Slave ID {slave_id}")
@@ -79,14 +65,12 @@ def scan_modbus():
             except Exception as e:
                 print(f"[ERR] Slave ID {slave_id}: {e}")
 
-    # ===== FINAL CLOSE =====
-    if ser is not None:
         ser.close()
 
     print("\n=== Scan Result ===")
     if found:
         for item in found:
-            print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[>
+            print(f"Baudrate={item[0]}, Slave ID={item[1]}, Response={item[2]}")
     else:
         print("No device found.")
 
