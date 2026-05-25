@@ -3,9 +3,9 @@ import struct
 import time
 
 PORT = "/dev/ttyACM0"
-BAUDRATES = [9600, 4800]
+BAUDRATES = [9600]
 SLAVE_IDS = range(1, 248)
-TIMEOUT = 0.3
+TIMEOUT = 0.5
 
 
 def crc16_modbus(data):
